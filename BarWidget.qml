@@ -53,7 +53,9 @@ BarWidget {
 
   function sendSummary() {
     if (summaryProc.running) return
-    summaryProc.command = ["omarchy-notification-send", "--app-name", "Stocks", "-g", "",
+    // Absolute path: see the trusted-path constants comment in Model.js — a
+    // bare command name would be resolved through the inherited PATH.
+    summaryProc.command = [Model.NOTIFICATION_SEND_PATH, "--app-name", "Stocks", "-g", "",
       "Watchlist", Model.watchlistSummary(root.tickers, root.quotes)]
     summaryProc.running = true
   }

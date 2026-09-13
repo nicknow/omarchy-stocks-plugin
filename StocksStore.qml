@@ -38,7 +38,10 @@ Item {
 
   Process {
     id: mkdirProc
-    command: ["mkdir", "-p", root.dir]
+    // Absolute path: see the trusted-path constants comment in
+    // Model.js — a bare command name would be resolved through the
+    // inherited PATH.
+    command: [Model.MKDIR_PATH, "-p", root.dir]
     onExited: file.reload()
   }
 

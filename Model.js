@@ -220,16 +220,35 @@ var MAX_SERIES_POINTS = 5000       // retained price points per series
 var MAX_QUOTE_SYMBOLS = 200        // retained quotes per spark response
 var MAX_FIELD_CHARS = 128          // retained length of any metadata string
 
+// Fixed, absolute paths for every executable the plugin runs. Quickshell's
+// Process resolves a bare command name through the inherited PATH — same as
+// a shell would — so a bare "curl" or "sh" lets anything earlier on PATH
+// stand in for it. A path containing "/" is never PATH-searched, so pinning
+// these (standard on any Arch/Omarchy install, part of the base usr-merged
+// filesystem) closes that substitution off entirely. If a system ever
+// relocates one of these, the fix is to update the constant here, not to
+// fall back to a bare name and reopen PATH search.
+var ENV_PATH = "/usr/bin/env"
+var SH_PATH = "/usr/bin/sh"
+var CURL_PATH = "/usr/bin/curl"
+var HEAD_PATH = "/usr/bin/head"
+var MKDIR_PATH = "/usr/bin/mkdir"
+var NOTIFICATION_SEND_PATH = "/usr/bin/omarchy-notification-send"
+
 // Builds a `curl | head -c` pipeline as a Process command array for
-// Quickshell's Process/StdioCollector. The URL and every limit travel as
-// positional shell parameters, never interpolated into the script text, so
-// nothing in a symbol, search query, or URL can affect how the shell parses
-// the command. `-L` (follow redirects) is deliberately omitted, same as
-// before this fix.
+// Quickshell's Process/StdioCollector. `env -i` runs it with an empty
+// environment (no inherited PATH, proxy variables, or CA/config overrides
+// curl would otherwise honor) so nothing but the flags spelled out here
+// shapes the request. curl gets `-q` too, so it skips `~/.curlrc` even if
+// some future caller runs this with $HOME still set. The URL and every
+// limit travel as positional shell parameters, never interpolated into the
+// script text, so nothing in a symbol, search query, or URL can affect how
+// the shell parses the command. `-L` (follow redirects) is deliberately
+// omitted, same as before this fix.
 function curlCommand(url, maxTimeSeconds, maxBytes) {
-  return ["sh", "-c",
-    'curl -fsS -A "$1" --connect-timeout "$2" --max-time "$3" ' +
-    '--speed-limit "$4" --speed-time "$5" --max-filesize "$6" "$7" | head -c "$6"',
+  return [ENV_PATH, "-i", SH_PATH, "-c",
+    CURL_PATH + ' -q -fsS -A "$1" --connect-timeout "$2" --max-time "$3" ' +
+    '--speed-limit "$4" --speed-time "$5" --max-filesize "$6" "$7" | ' + HEAD_PATH + ' -c "$6"',
     "curl-fetch",
     USER_AGENT,
     String(CONNECT_TIMEOUT),
@@ -662,6 +681,12 @@ if (typeof module !== "undefined") {
     curlCommand: curlCommand,
     readBounded: readBounded,
     capString: capString,
+    ENV_PATH: ENV_PATH,
+    SH_PATH: SH_PATH,
+    CURL_PATH: CURL_PATH,
+    HEAD_PATH: HEAD_PATH,
+    MKDIR_PATH: MKDIR_PATH,
+    NOTIFICATION_SEND_PATH: NOTIFICATION_SEND_PATH,
     MAX_QUOTE_BYTES: MAX_QUOTE_BYTES,
     MAX_CHART_BYTES: MAX_CHART_BYTES,
     MAX_SEARCH_BYTES: MAX_SEARCH_BYTES,

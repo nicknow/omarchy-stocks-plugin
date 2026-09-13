@@ -144,7 +144,9 @@ Item {
   function pumpNotes() {
     if (notifyProc.running || root.noteQueue.length === 0) return
     var note = root.noteQueue.shift()
-    notifyProc.command = ["omarchy-notification-send", "--app-name", "Stocks",
+    // Absolute path: see the trusted-path constants comment in Model.js — a
+    // bare command name would be resolved through the inherited PATH.
+    notifyProc.command = [Model.NOTIFICATION_SEND_PATH, "--app-name", "Stocks",
       "-u", "normal", "-g", "", note.headline, note.body]
     notifyProc.running = true
   }

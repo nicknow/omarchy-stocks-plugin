@@ -37,8 +37,12 @@ Every request goes through `curl | head -c` (see `Model.curlCommand()` in
 `Model.js`), which bounds connect time, total time, sustained throughput, and
 response size — independent of what the endpoint claims or streams back — so
 a compromised or malformed response can't pin the shared `omarchy-shell`
-process. Requires `curl`, `sh`, and `head` on `PATH`, all standard on any
-Linux install.
+process. `curl`, `sh`, and `head`, along with `mkdir` and
+`omarchy-notification-send`, are all invoked by fixed absolute path (not
+`PATH`-searched) and the fetch itself runs with an empty environment, so
+nothing earlier on `PATH` — or a proxy/config env var — can stand in for
+them. All are standard on any Arch/Omarchy install at the paths this plugin
+expects (`/usr/bin/…`).
 
 ## Install
 

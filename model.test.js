@@ -171,9 +171,15 @@ ok("readBounded rejects text over the cap", m.readBounded("abcdefghijk", 10) ===
 ok("readBounded treats missing text as empty, under any positive cap", m.readBounded(undefined, 10) === "")
 
 var cmd = m.curlCommand("https://example.com/x?a=1", 7, 2048)
-ok("curlCommand runs through sh -c", cmd[0] === "sh" && cmd[1] === "-c")
-ok("curlCommand pipes curl into head -c", /curl .* \| head -c/.test(cmd[2]))
-ok("curlCommand never inlines the URL into the script", cmd[2].indexOf("example.com") === -1)
+ok("curlCommand runs through env -i so the child gets no inherited environment",
+  cmd[0] === m.ENV_PATH && cmd[1] === "-i")
+ok("curlCommand invokes sh by absolute path", cmd[2] === m.SH_PATH && cmd[3] === "-c")
+ok("curlCommand pipes curl into head -c, both by absolute path",
+  cmd[4].indexOf(m.CURL_PATH + " ") === 0 && cmd[4].indexOf("| " + m.HEAD_PATH + " -c") !== -1)
+ok("every path constant used in the script is itself absolute",
+  [m.ENV_PATH, m.SH_PATH, m.CURL_PATH, m.HEAD_PATH, m.MKDIR_PATH, m.NOTIFICATION_SEND_PATH]
+    .every(function (p) { return p.charAt(0) === "/" }))
+ok("curlCommand never inlines the URL into the script", cmd[4].indexOf("example.com") === -1)
 ok("curlCommand passes the URL as a positional arg instead", cmd.indexOf("https://example.com/x?a=1") !== -1)
 ok("curlCommand carries the requested max-time", cmd.indexOf("7") !== -1)
 ok("curlCommand carries the requested byte cap", cmd.indexOf("2048") !== -1)

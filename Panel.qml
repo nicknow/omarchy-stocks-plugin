@@ -140,7 +140,7 @@ Panel {
     if (root.bar && typeof root.bar.setCenterHoverRevealSuppressed === "function")
       return root.bar.setCenterHoverRevealSuppressed(wanted)
     if (root.bar && "centerHoverRevealSuppressed" in root.bar)
-      root.bar.centerHoverRevealSuppressed = wanted
+      try { root.bar.centerHoverRevealSuppressed = wanted } catch (err) {}
   }
 
   // ------------------------------------------------- watchlist mutations ----

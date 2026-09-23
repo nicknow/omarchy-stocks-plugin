@@ -136,8 +136,11 @@ Panel {
   }
 
   function setCenterHoverRevealSuppressed(value) {
+    var wanted = !!value
+    if (root.bar && typeof root.bar.setCenterHoverRevealSuppressed === "function")
+      return root.bar.setCenterHoverRevealSuppressed(wanted)
     if (root.bar && "centerHoverRevealSuppressed" in root.bar)
-      root.bar.centerHoverRevealSuppressed = value
+      root.bar.centerHoverRevealSuppressed = wanted
   }
 
   // ------------------------------------------------- watchlist mutations ----
